@@ -19,15 +19,30 @@ Replace this paragraph with your own summary of what your version does.
 
 Explain your design in plain language.
 
+According to what I research and the data that is provided it would be the best to use the content based recommendations.
+
 Some prompts to answer:
 
 - What features does each `Song` use in your system
   - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
 
+  For the system, each song uses genre and mood as the main categorical features. energy, tempo_bpm, valence, danceability, and acousticness as the main numerical features
+
+- What information does your `UserProfile` store
+  - genre, mood, energy,tempo_bpm, valence
+
+- How does your `Recommender` compute a score for each song
+  - It would compute base on the similarity between the song's features and the user's preferences.
+- How do you choose which songs to recommend
+  - When the recommend funciton recieve the user's preferences and songs.csv files I would compute the total score for each songs base on the user's preference. Here Genre and Mood weight 65 percent of the total scores becuase I believe those two are the hard constraints. The other information for Userprofile are only for ranking.
 You can include a simple diagram or bullet list if helpful.
+
+![Recommender Workflow](WorkFlow.png)
+-Potential Biases:
+    Since the system design focuses on genre and mood as the string comparsion, there's no concept of similarity between genres.
+
+![Termial Output](Top5_recommendations.png)
+
 
 ---
 
@@ -51,6 +66,7 @@ pip install -r requirements.txt
 3. Run the app:
 
 ```bash
+
 python -m src.main
 ```
 
@@ -106,7 +122,7 @@ Write 1 to 2 paragraphs here about what you learned:
 
 ## 7. `model_card_template.md`
 
-Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}  
+Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}
 
 ```markdown
 # 🎧 Model Card - Music Recommender Simulation
