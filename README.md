@@ -87,8 +87,21 @@ You can add more tests in `tests/test_recommender.py`.
 Use this section to document the experiments you ran. For example:
 
 - What happened when you changed the weight on genre from 2.0 to 0.5
+  - All the songs including pop in genre appeared at the top of the list. The other factors are only considered if the genre does not match.
 - What happened when you added tempo or valence to the score
 - How did your system behave for different types of users
+  - System still have a lot of logic gap. Following are the weird recommedation base on certain edge cases.
+### no_contradiction_penalty
+
+![no_contradiction_penalty](no_contradiction_penalty.png)
+
+### OutOfRangeNumericalValues
+
+![OutOfRangeNumericalValues](OutOfRangeNumericalValues.png)
+
+### Unknown_word
+
+![Unknown_word](Unknown_word.png)
 
 ---
 
@@ -112,10 +125,13 @@ Read and complete `model_card.md`:
 
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
+These experiments helped me see that my recommender does not really "understand" music taste. It mostly adds together genre, mood, and numeric similarities, so the output depends a lot on which features get recognized and which ones get ignored. That means a song like `Gym Hero` can keep appearing for users who ask for "Happy Pop" because the system strongly rewards pop and high energy, even when the mood is not a perfect match. This showed me how a recommender can look reasonable at first while still missing the real meaning behind a user's preferences.
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+Profile comparisons:
+
+- `no_contradiction_penalty` vs `Unknown_word`: the contradiction profile still pushed songs like `Gym Hero` near the top because the system could still see useful signals like pop and high energy. The unknown-word profile changed more because the recommender did not understand the words, so it stopped using genre and mood well and mostly relied on the numbers.
+- `no_contradiction_penalty` vs `OutOfRangeNumericalValues`: both profiles gave odd results, but for different reasons. In the contradiction profile, `Gym Hero` keeps showing up because the algorithm rewards pop and energy so much that it can overlook the mood conflict. In the out-of-range profile, the score becomes less meaningful because the numeric targets are unrealistic, so the recommender grabs whatever songs still look closest.
+- `OutOfRangeNumericalValues` vs `Unknown_word`: these two profiles both became less personal, but not in the same way. The out-of-range profile confused the number matching, while the unknown-word profile removed the meaning of genre and mood, so both ended up pushing the system toward more generic recommendations instead of clearly matching the user's vibe.
 
 
 ---
