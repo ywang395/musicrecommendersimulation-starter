@@ -19,7 +19,7 @@ def main() -> None:
     songs = load_songs("data/songs.csv")
 
     # Starter example profile
-    user_prefs = {"genre": "rock", "mood": "sad", "energy": 0.5}
+    user_prefs = {"genre": "pop", "mood": "joyful", "energy": 0.6, "likes_acoustic": False}
 
     recommendations = recommend_songs(user_prefs, songs, k=5)
 

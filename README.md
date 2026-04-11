@@ -26,20 +26,20 @@ Some prompts to answer:
 - What features does each `Song` use in your system
   - For example: genre, mood, energy, tempo
 
-  For the system, each song uses genre and mood as the main categorical features. energy, tempo_bpm, valence, danceability, and acousticness as the main numerical features
+  For the system, each song uses genre and mood as the main categorical features. It also uses energy, valence, danceability, and acousticness as the main numerical features when ranking songs.
 
 - What information does your `UserProfile` store
-  - genre, mood, energy,tempo_bpm, valence
+  - genre, mood, target energy, target danceability, target valence, acoustic preference, and optional favorite artist
 
 - How does your `Recommender` compute a score for each song
-  - It would compute base on the similarity between the song's features and the user's preferences.
+  - It computes a weighted score based on similarity between the song's features and the user's preferences. Exact genre and mood matches help the most, but the system also compares energy, danceability, valence, and acousticness.
 - How do you choose which songs to recommend
-  - When the recommend funciton recieve the user's preferences and songs.csv files I would compute the total score for each songs base on the user's preference. Here Genre and Mood weight 65 percent of the total scores becuase I believe those two are the hard constraints. The other information for Userprofile are only for ranking.
+  - When the recommender receives the user's preferences and the songs.csv file, it computes a total score for each song and sorts them from highest to lowest. Genre, mood, and energy are still important, but the final ranking is improved by danceability, valence, acousticness, and artist preference when provided.
 You can include a simple diagram or bullet list if helpful.
 
 ![Recommender Workflow](WorkFlow.png)
 -Potential Biases:
-    Since the system design focuses on genre and mood as the string comparsion, there's no concept of similarity between genres.
+    The system now includes a small genre similarity map, so related genres such as pop and indie pop can receive partial credit. However, this is still a hand-written rule, so it reflects my assumptions and may miss other genre relationships.
 
 ![Termial Output](Top5_recommendations.png)
 
@@ -224,4 +224,3 @@ A few sentences about what you learned:
 - What surprised you about how your system behaved
 - How did building this change how you think about real music recommenders
 - Where do you think human judgment still matters, even if the model seems "smart"
-

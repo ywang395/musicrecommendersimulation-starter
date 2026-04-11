@@ -1,4 +1,12 @@
-from src.recommender import Song, UserProfile, Recommender
+from src.recommender import (
+    Recommender,
+    Song,
+    UserProfile,
+    genre_similarity,
+    mood_similarity,
+    score_song,
+)
+
 
 def make_small_recommender() -> Recommender:
     songs = [
@@ -41,9 +49,82 @@ def test_recommend_returns_songs_sorted_by_score():
     results = rec.recommend(user, k=2)
 
     assert len(results) == 2
-    # Starter expectation: the pop, happy, high energy song should score higher
     assert results[0].genre == "pop"
     assert results[0].mood == "happy"
+
+
+def test_for_genre_similarity():
+    assert genre_similarity("pop", "indie pop") == 0.8
+    assert genre_similarity("rock", "metal") == 0.7
+    assert genre_similarity("pop", "classical") == 0.0
+
+    user_prefs = {
+        "genre": "pop",
+        "mood": "happy",
+        "energy": 0.8,
+        "likes_acoustic": False,
+    }
+    similar_song = {
+        "genre": "indie pop",
+        "mood": "happy",
+        "artist": "Another Artist",
+        "energy": 0.8,
+        "danceability": 0.8,
+        "valence": 0.9,
+        "acousticness": 0.2,
+    }
+    unrelated_song = {
+        "genre": "classical",
+        "mood": "happy",
+        "artist": "Another Artist",
+        "energy": 0.8,
+        "danceability": 0.8,
+        "valence": 0.9,
+        "acousticness": 0.2,
+    }
+
+    similar_score, similar_reasons = score_song(user_prefs, similar_song)
+    unrelated_score, _ = score_song(user_prefs, unrelated_song)
+
+    assert similar_score > unrelated_score
+    assert any("similar genre match" in reason for reason in similar_reasons)
+
+
+def test_for_mood_similarity():
+    assert mood_similarity("happy", "joyful") == 0.8
+    assert mood_similarity("sad", "melancholic") == 0.8
+    assert mood_similarity("happy", "angry") == 0.0
+
+    user_prefs = {
+        "genre": "pop",
+        "mood": "happy",
+        "energy": 0.8,
+        "likes_acoustic": False,
+    }
+    similar_song = {
+        "genre": "pop",
+        "mood": "joyful",
+        "artist": "Another Artist",
+        "energy": 0.8,
+        "danceability": 0.8,
+        "valence": 0.9,
+        "acousticness": 0.2,
+    }
+    unrelated_song = {
+        "genre": "pop",
+        "mood": "angry",
+        "artist": "Another Artist",
+        "energy": 0.8,
+        "danceability": 0.8,
+        "valence": 0.9,
+        "acousticness": 0.2,
+    }
+
+    similar_score, similar_reasons = score_song(user_prefs, similar_song)
+    unrelated_score, _ = score_song(user_prefs, unrelated_song)
+
+    assert similar_score > unrelated_score
+    assert any("similar mood match" in reason for reason in similar_reasons)
 
 
 def test_explain_recommendation_returns_non_empty_string():
