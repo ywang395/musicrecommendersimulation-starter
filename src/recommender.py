@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Tuple
 
 
@@ -8,6 +8,12 @@ def _normalize_text(value: str) -> str:
 
 def _clamp_similarity(value: float) -> float:
     return max(0.0, min(1.0, value))
+
+
+def _parse_tags(value: str) -> List[str]:
+    if not value:
+        return []
+    return [_normalize_text(tag) for tag in str(value).split("|") if _normalize_text(tag)]
 
 
 GENRE_SIMILARITY = {
@@ -62,6 +68,66 @@ def mood_similarity(user_mood: str, song_mood: str) -> float:
     return MOOD_SIMILARITY.get((user_mood, song_mood), 0.0)
 
 
+SCORING_MODES = {
+    "balanced": {
+        "genre": 0.16,
+        "mood": 0.14,
+        "energy": 0.12,
+        "danceability": 0.10,
+        "valence": 0.08,
+        "acousticness": 0.07,
+        "popularity": 0.08,
+        "decade": 0.06,
+        "mood_tags": 0.08,
+        "live_energy": 0.04,
+        "lyrical_depth": 0.04,
+        "instrumentalness": 0.03,
+    },
+    "genre_first": {
+        "genre": 0.26,
+        "mood": 0.10,
+        "energy": 0.08,
+        "danceability": 0.07,
+        "valence": 0.05,
+        "acousticness": 0.06,
+        "popularity": 0.06,
+        "decade": 0.10,
+        "mood_tags": 0.08,
+        "live_energy": 0.04,
+        "lyrical_depth": 0.05,
+        "instrumentalness": 0.05,
+    },
+    "mood_first": {
+        "genre": 0.10,
+        "mood": 0.24,
+        "energy": 0.08,
+        "danceability": 0.08,
+        "valence": 0.08,
+        "acousticness": 0.06,
+        "popularity": 0.05,
+        "decade": 0.05,
+        "mood_tags": 0.16,
+        "live_energy": 0.04,
+        "lyrical_depth": 0.04,
+        "instrumentalness": 0.02,
+    },
+    "energy_focused": {
+        "genre": 0.09,
+        "mood": 0.09,
+        "energy": 0.26,
+        "danceability": 0.12,
+        "valence": 0.07,
+        "acousticness": 0.05,
+        "popularity": 0.07,
+        "decade": 0.04,
+        "mood_tags": 0.06,
+        "live_energy": 0.10,
+        "lyrical_depth": 0.02,
+        "instrumentalness": 0.03,
+    },
+}
+
+
 @dataclass
 class Song:
     """
@@ -79,6 +145,12 @@ class Song:
     valence: float
     danceability: float
     acousticness: float
+    popularity: int = 50
+    release_decade: int = 2010
+    mood_tags: str = ""
+    live_energy: float = 0.5
+    lyrical_depth: float = 0.5
+    instrumentalness: float = 0.5
 
 
 @dataclass
@@ -95,6 +167,13 @@ class UserProfile:
     favorite_artist: str = ""
     target_danceability: float = 0.5
     target_valence: float = 0.5
+    desired_popularity: float = 0.5
+    preferred_decade: int = 2010
+    preferred_mood_tags: List[str] = field(default_factory=list)
+    target_live_energy: float = 0.5
+    target_lyrical_depth: float = 0.5
+    target_instrumentalness: float = 0.5
+    scoring_mode: str = "balanced"
 
 
 class Recommender:
@@ -104,11 +183,9 @@ class Recommender:
     """
 
     def __init__(self, songs: List[Song]):
-        """Initialize the recommender with a song catalog."""
         self.songs = songs
 
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
-        """Return the top-k songs ranked for the given user profile."""
         user_prefs = {
             "genre": user.favorite_genre,
             "artist": user.favorite_artist,
@@ -117,25 +194,18 @@ class Recommender:
             "likes_acoustic": user.likes_acoustic,
             "danceability": user.target_danceability,
             "valence": user.target_valence,
+            "popularity": user.desired_popularity,
+            "release_decade": user.preferred_decade,
+            "mood_tags": user.preferred_mood_tags,
+            "live_energy": user.target_live_energy,
+            "lyrical_depth": user.target_lyrical_depth,
+            "instrumentalness": user.target_instrumentalness,
         }
-        scored = []
-        for song in self.songs:
-            song_dict = {
-                "genre": song.genre,
-                "mood": song.mood,
-                "artist": song.artist,
-                "energy": song.energy,
-                "danceability": song.danceability,
-                "valence": song.valence,
-                "acousticness": song.acousticness,
-            }
-            score, _ = score_song(user_prefs, song_dict)
-            scored.append((song, score))
-        scored.sort(key=lambda x: x[1], reverse=True)
-        return [song for song, _ in scored[:k]]
+        ranked = recommend_songs(user_prefs, [song.__dict__ for song in self.songs], k=k, mode=user.scoring_mode)
+        by_id = {song.id: song for song in self.songs}
+        return [by_id[item["id"]] for item, _, _ in ranked]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
-        """Summarize why a song matches the user's preferences."""
         user_prefs = {
             "genre": user.favorite_genre,
             "artist": user.favorite_artist,
@@ -144,25 +214,18 @@ class Recommender:
             "likes_acoustic": user.likes_acoustic,
             "danceability": user.target_danceability,
             "valence": user.target_valence,
+            "popularity": user.desired_popularity,
+            "release_decade": user.preferred_decade,
+            "mood_tags": user.preferred_mood_tags,
+            "live_energy": user.target_live_energy,
+            "lyrical_depth": user.target_lyrical_depth,
+            "instrumentalness": user.target_instrumentalness,
         }
-        song_dict = {
-            "genre": song.genre,
-            "mood": song.mood,
-            "artist": song.artist,
-            "energy": song.energy,
-            "danceability": song.danceability,
-            "valence": song.valence,
-            "acousticness": song.acousticness,
-        }
-        score, reasons = score_song(user_prefs, song_dict)
+        score, reasons = score_song(user_prefs, song.__dict__, mode=user.scoring_mode)
         return f"Score {score:.2f}: " + ", ".join(reasons)
 
 
 def load_songs(csv_path: str) -> List[Dict]:
-    """
-    Loads songs from a CSV file.
-    Required by src/main.py
-    """
     import csv
 
     songs = []
@@ -180,24 +243,80 @@ def load_songs(csv_path: str) -> List[Dict]:
                     "valence": float(row["valence"]),
                     "danceability": float(row["danceability"]),
                     "acousticness": float(row["acousticness"]),
+                    "popularity": int(row.get("popularity", 50)),
+                    "release_decade": int(row.get("release_decade", 2010)),
+                    "mood_tags": row.get("mood_tags", ""),
+                    "live_energy": float(row.get("live_energy", 0.5)),
+                    "lyrical_depth": float(row.get("lyrical_depth", 0.5)),
+                    "instrumentalness": float(row.get("instrumentalness", 0.5)),
                 }
             )
         print(f"Loaded songs: {len(songs)}")
     return songs
 
 
-def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
-    """
-    Scores a single song against user preferences.
-    Required by recommend_songs() and src/main.py
-    """
+def _numeric_similarity(song_value: float, user_value: float, scale: float = 1.0) -> float:
+    return _clamp_similarity(1.0 - abs(song_value - user_value) / scale)
 
+
+def _mood_tag_similarity(user_tags: List[str], song_tags: List[str]) -> float:
+    if not user_tags:
+        return 0.5
+    overlap = len(set(user_tags) & set(song_tags))
+    return overlap / len(set(user_tags))
+
+
+def _get_weights(mode: str, user_artist: str) -> Dict[str, float]:
+    weights = dict(SCORING_MODES.get(mode, SCORING_MODES["balanced"]))
+    if user_artist:
+        weights["artist"] = 0.08
+        weights["popularity"] = max(0.0, weights["popularity"] - 0.04)
+        weights["instrumentalness"] = max(0.0, weights["instrumentalness"] - 0.04)
+    return weights
+
+
+def _build_reasons(component_scores: Dict[str, float], weights: Dict[str, float], user_artist: str) -> List[str]:
+    def fmt(label: str, points: float) -> str:
+        return f"{label} (+{points:.2f})"
+
+    reasons = []
+    if component_scores["genre"] == 1.0:
+        reasons.append(fmt("genre match", weights["genre"] * component_scores["genre"]))
+    elif component_scores["genre"] > 0.0:
+        reasons.append(fmt("similar genre match", weights["genre"] * component_scores["genre"]))
+    if component_scores["mood"] == 1.0:
+        reasons.append(fmt("mood match", weights["mood"] * component_scores["mood"]))
+    elif component_scores["mood"] > 0.0:
+        reasons.append(fmt("similar mood match", weights["mood"] * component_scores["mood"]))
+    if component_scores["mood_tags"] > 0.0:
+        reasons.append(fmt("mood tag fit", weights["mood_tags"] * component_scores["mood_tags"]))
+    if user_artist and component_scores["artist"]:
+        reasons.append(fmt("artist match", weights["artist"] * component_scores["artist"]))
+    reasons.append(fmt("energy similarity", weights["energy"] * component_scores["energy"]))
+    reasons.append(fmt("danceability similarity", weights["danceability"] * component_scores["danceability"]))
+    reasons.append(fmt("valence similarity", weights["valence"] * component_scores["valence"]))
+    reasons.append(fmt("popularity fit", weights["popularity"] * component_scores["popularity"]))
+    reasons.append(fmt("era fit", weights["decade"] * component_scores["decade"]))
+    reasons.append(fmt("live energy fit", weights["live_energy"] * component_scores["live_energy"]))
+    reasons.append(fmt("lyrical depth fit", weights["lyrical_depth"] * component_scores["lyrical_depth"]))
+    reasons.append(fmt("instrumentalness fit", weights["instrumentalness"] * component_scores["instrumentalness"]))
+    return reasons
+
+
+def score_song(user_prefs: Dict, song: Dict, mode: str = "balanced") -> Tuple[float, List[str]]:
     user_genre = _normalize_text(user_prefs.get("genre", ""))
     user_artist = _normalize_text(user_prefs.get("artist", ""))
     user_mood = _normalize_text(user_prefs.get("mood", ""))
     user_energy = float(user_prefs.get("energy", 0.5))
     user_danceability = float(user_prefs.get("danceability", 0.5))
     user_valence = float(user_prefs.get("valence", 0.5))
+    user_popularity = float(user_prefs.get("popularity", 0.5))
+    user_decade = int(user_prefs.get("release_decade", 2010))
+    raw_tags = user_prefs.get("mood_tags", [])
+    user_tags = _parse_tags("|".join(raw_tags)) if isinstance(raw_tags, list) else _parse_tags(raw_tags)
+    user_live_energy = float(user_prefs.get("live_energy", 0.5))
+    user_lyrical_depth = float(user_prefs.get("lyrical_depth", 0.5))
+    user_instrumentalness = float(user_prefs.get("instrumentalness", 0.5))
     likes_acoustic = user_prefs.get("likes_acoustic", None)
 
     song_genre = _normalize_text(song.get("genre", ""))
@@ -207,73 +326,86 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     song_danceability = float(song.get("danceability", 0.5))
     song_valence = float(song.get("valence", 0.5))
     song_acousticness = float(song.get("acousticness", 0.5))
+    song_popularity = float(song.get("popularity", 50)) / 100.0  # normalize 0-100 → 0-1 to match user_popularity
+    song_decade = int(song.get("release_decade", 2010))
+    song_tags = _parse_tags(song.get("mood_tags", ""))
+    song_live_energy = float(song.get("live_energy", 0.5))
+    song_lyrical_depth = float(song.get("lyrical_depth", 0.5))
+    song_instrumentalness = float(song.get("instrumentalness", 0.5))
 
-    genre_score = genre_similarity(user_genre, song_genre)
-    mood_score = mood_similarity(user_mood, song_mood)
-    artist_score = 1.0 if user_artist and song_artist == user_artist else 0.0
-    energy_score = _clamp_similarity(1.0 - abs(song_energy - user_energy))
-    danceability_score = _clamp_similarity(1.0 - abs(song_danceability - user_danceability))
-    valence_score = _clamp_similarity(1.0 - abs(song_valence - user_valence))
+    component_scores = {
+        "genre": genre_similarity(user_genre, song_genre),
+        "mood": mood_similarity(user_mood, song_mood),
+        "artist": 1.0 if user_artist and song_artist == user_artist else 0.0,
+        "energy": _numeric_similarity(song_energy, user_energy),
+        "danceability": _numeric_similarity(song_danceability, user_danceability),
+        "valence": _numeric_similarity(song_valence, user_valence),
+        "popularity": _numeric_similarity(song_popularity, user_popularity),
+        "decade": _numeric_similarity(song_decade, user_decade, scale=40.0),
+        "mood_tags": _mood_tag_similarity(user_tags, song_tags),
+        "live_energy": _numeric_similarity(song_live_energy, user_live_energy),
+        "lyrical_depth": _numeric_similarity(song_lyrical_depth, user_lyrical_depth),
+        "instrumentalness": _numeric_similarity(song_instrumentalness, user_instrumentalness),
+    }
+
+    weights = _get_weights(mode, user_artist)
 
     if likes_acoustic is None:
-        acoustic_score = 0.5
+        component_scores["acousticness"] = 0.5
+        acousticness_reason = f"acousticness neutral (+{weights['acousticness'] * 0.5:.2f})"
     else:
-        acoustic_score = song_acousticness if likes_acoustic else (1.0 - song_acousticness)
-
-    weights = {
-        "genre": 0.25,
-        "mood": 0.20,
-        "energy": 0.20,
-        "danceability": 0.15,
-        "valence": 0.10,
-        "acousticness": 0.10,
-    }
-    if user_artist:
-        weights["artist"] = 0.10
-        for key in ("danceability", "valence"):
-            weights[key] -= 0.05
-
-    score = (
-        weights["genre"] * genre_score
-        + weights["mood"] * mood_score
-        + weights["energy"] * energy_score
-        + weights["danceability"] * danceability_score
-        + weights["valence"] * valence_score
-        + weights["acousticness"] * acoustic_score
-        + weights.get("artist", 0.0) * artist_score
-    )
-
-    reasons = []
-    if genre_score == 1.0:
-        reasons.append(f"genre match (+{weights['genre'] * genre_score:.2f})")
-    elif genre_score > 0.0:
-        reasons.append(f"similar genre match (+{weights['genre'] * genre_score:.2f})")
-    if mood_score == 1.0:
-        reasons.append(f"mood match (+{weights['mood'] * mood_score:.2f})")
-    elif mood_score > 0.0:
-        reasons.append(f"similar mood match (+{weights['mood'] * mood_score:.2f})")
-    if artist_score:
-        reasons.append(f"artist match (+{weights['artist'] * artist_score:.2f})")
-
-    reasons.append(f"energy similarity (+{weights['energy'] * energy_score:.2f})")
-    reasons.append(
-        f"danceability similarity (+{weights['danceability'] * danceability_score:.2f})"
-    )
-    reasons.append(f"valence similarity (+{weights['valence'] * valence_score:.2f})")
-
-    if likes_acoustic is not None:
+        component_scores["acousticness"] = song_acousticness if likes_acoustic else (1.0 - song_acousticness)
         acoustic_label = "acousticness fit" if likes_acoustic else "low acousticness fit"
-        reasons.append(f"{acoustic_label} (+{weights['acousticness'] * acoustic_score:.2f})")
+        acousticness_reason = f"{acoustic_label} (+{weights['acousticness'] * component_scores['acousticness']:.2f})"
 
+    score = sum(weights[key] * component_scores[key] for key in weights if key in component_scores)
+    reasons = _build_reasons(component_scores, weights, user_artist)
+    reasons.append(acousticness_reason)
     return score, reasons
 
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
-    """
-    Functional implementation of the recommendation logic.
-    Required by src/main.py
-    """
+def _apply_diversity_penalty(song: Dict, selected_songs: List[Dict]) -> Tuple[float, List[str]]:
+    penalty = 0.0
+    reasons = []
+    if any(_normalize_text(existing.get("artist", "")) == _normalize_text(song.get("artist", "")) for existing in selected_songs):
+        penalty += 0.08
+        reasons.append("artist diversity penalty (-0.08)")
+    if any(_normalize_text(existing.get("genre", "")) == _normalize_text(song.get("genre", "")) for existing in selected_songs):
+        penalty += 0.05
+        reasons.append("genre diversity penalty (-0.05)")
+    return penalty, reasons
 
-    scored = [(song, *score_song(user_prefs, song)) for song in songs]
-    ranked = sorted(scored, key=lambda x: x[1], reverse=True)
-    return [(song, score, ", ".join(reasons)) for song, score, reasons in ranked[:k]]
+
+def recommend_songs(
+    user_prefs: Dict, songs: List[Dict], k: int = 5, mode: str = "balanced"
+) -> List[Tuple[Dict, float, str]]:
+    scored = []
+    for song in songs:
+        score, reasons = score_song(user_prefs, song, mode=mode)
+        scored.append({"song": song, "base_score": score, "reasons": reasons})
+
+    scored.sort(key=lambda item: item["base_score"], reverse=True)
+
+    selected = []
+    selected_songs = []
+    while scored and len(selected) < k:
+        best_item = None
+        best_final_score = float("-inf")
+        best_penalty_reasons: List[str] = []
+        for item in scored:
+            penalty, penalty_reasons = _apply_diversity_penalty(item["song"], selected_songs)
+            final_score = item["base_score"] - penalty
+            if final_score > best_final_score:
+                best_final_score = final_score
+                best_item = item
+                best_penalty_reasons = penalty_reasons
+
+        if best_item is None:
+            break
+
+        scored.remove(best_item)
+        selected_songs.append(best_item["song"])
+        all_reasons = best_item["reasons"] + best_penalty_reasons
+        selected.append((best_item["song"], best_final_score, ", ".join(all_reasons)))
+
+    return selected
