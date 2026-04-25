@@ -140,3 +140,46 @@ def test_explain_recommendation_returns_non_empty_string():
     explanation = rec.explain_recommendation(user, song)
     assert isinstance(explanation, str)
     assert explanation.strip() != ""
+
+
+def test_score_song_uses_tempo_preference():
+    user_prefs = {
+        "genre": "pop",
+        "mood": "happy",
+        "energy": 0.5,
+        "tempo_bpm": 140,
+        "likes_acoustic": False,
+    }
+    fast_song = {
+        "genre": "pop",
+        "mood": "happy",
+        "artist": "Fast Artist",
+        "energy": 0.5,
+        "tempo_bpm": 138,
+        "danceability": 0.7,
+        "valence": 0.8,
+        "acousticness": 0.2,
+    }
+    slow_song = {
+        "genre": "pop",
+        "mood": "happy",
+        "artist": "Slow Artist",
+        "energy": 0.5,
+        "tempo_bpm": 75,
+        "danceability": 0.7,
+        "valence": 0.8,
+        "acousticness": 0.2,
+    }
+
+    fast_score, fast_reasons = score_song(user_prefs, fast_song)
+    slow_score, _ = score_song(user_prefs, slow_song)
+
+    assert fast_score > slow_score
+    assert any("tempo fit" in reason for reason in fast_reasons)
+
+
+def test_recommender_accepts_csv_path():
+    rec = Recommender("data/songs.csv")
+
+    assert rec.songs
+    assert isinstance(rec.songs[0], Song)

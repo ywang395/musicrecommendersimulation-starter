@@ -73,25 +73,98 @@ def _format_reasons(text: str, width: int = 56, points_width: int = 8) -> str:
     return "\n".join(lines)
 
 
-def main() -> None:
-    songs = load_songs("data/songs.csv")
+def _default_stable_profile():
+    from src.models import StableUserProfile
 
-    # Switch this value to "genre_first", "mood_first", or "energy_focused".
-    mode = "mood_first"
-    user_prefs = {
-        "genre": "pop",
-        "mood": "sad",
-        "energy": 0.1,
-        "danceability": 0.1,
-        "valence": 0.1,
-        "likes_acoustic": True,
-        "popularity": 0.85,
-        "release_decade": 2010,
-        "mood_tags": [],
-        "live_energy": 0.2,
-        "lyrical_depth": 0.35,
-        "instrumentalness": 0.0,
+    return StableUserProfile(
+        favorite_genre="pop",
+        favorite_mood="sad",
+        target_energy=0.1,
+        likes_acoustic=True,
+        target_danceability=0.1,
+        target_valence=0.1,
+        desired_popularity=0.85,
+        preferred_decade=2010,
+    )
+
+
+def _profile_to_user_prefs(stable) -> dict:
+    return {
+        "genre": stable.favorite_genre,
+        "artist": stable.favorite_artist,
+        "mood": stable.favorite_mood,
+        "energy": stable.target_energy,
+        "tempo_bpm": stable.target_tempo_bpm,
+        "danceability": stable.target_danceability,
+        "valence": stable.target_valence,
+        "likes_acoustic": stable.likes_acoustic,
+        "popularity": stable.desired_popularity,
+        "release_decade": stable.preferred_decade,
+        "mood_tags": stable.preferred_mood_tags,
+        "live_energy": stable.target_live_energy,
+        "lyrical_depth": stable.target_lyrical_depth,
+        "instrumentalness": stable.target_instrumentalness,
     }
+
+
+def _top_titles(stable, songs, k: int = 5):
+    recs = recommend_songs(_profile_to_user_prefs(stable), songs, k=k, mode=stable.scoring_mode)
+    return [song["title"] for song, _, _ in recs]
+
+
+def _run_profile_sync_preview(apply_changes: bool) -> int:
+    from src.llm_reeval import load_profile, save_profile, update_profile_at_session_end
+
+    songs = load_songs("data/songs.csv")
+    stable = load_profile("data/user_profile.json") or _default_stable_profile()
+    new_stable, reason = update_profile_at_session_end("data/history.jsonl", stable)
+
+    print("\n" + "=" * 88)
+    print("PROFILE SYNC PREVIEW")
+    print("=" * 88)
+    print(f"version: {stable.version} -> {new_stable.version}")
+    print(f"genre  : {stable.favorite_genre} -> {new_stable.favorite_genre}")
+    print(f"mood   : {stable.favorite_mood} -> {new_stable.favorite_mood}")
+    print(f"energy : {stable.target_energy} -> {new_stable.target_energy}")
+    print(f"tempo  : {stable.target_tempo_bpm} -> {new_stable.target_tempo_bpm}")
+    print(f"tags   : {stable.preferred_mood_tags} -> {new_stable.preferred_mood_tags}")
+    print(f"reason : {reason}")
+
+    before_titles = _top_titles(stable, songs)
+    after_titles = _top_titles(new_stable, songs)
+    print(f"top5 before: {before_titles}")
+    print(f"top5 after : {after_titles}")
+
+    if apply_changes:
+        if new_stable.version != stable.version:
+            save_profile(new_stable, "data/user_profile.json")
+            print("profile saved to data/user_profile.json")
+        else:
+            print("no profile changes were saved")
+
+    return 0
+
+
+def main() -> None:
+    from src.llm_reeval import load_profile
+
+    songs = load_songs("data/songs.csv")
+    stable = load_profile("data/user_profile.json") or _default_stable_profile()
+
+    if "--sync-profile-preview" in sys.argv:
+        raise SystemExit(_run_profile_sync_preview(apply_changes=False))
+
+    if "--sync-profile" in sys.argv:
+        raise SystemExit(_run_profile_sync_preview(apply_changes=True))
+
+    if "--now-playing" in sys.argv:
+        from src.player import run_now_playing
+
+        run_now_playing(songs, stable)
+        return
+
+    mode = stable.scoring_mode
+    user_prefs = _profile_to_user_prefs(stable)
 
     recommendations = recommend_songs(user_prefs, songs, k=5, mode=mode)
 
@@ -99,13 +172,14 @@ def main() -> None:
     print("TOP RECOMMENDATIONS")
     print(f"mode={mode} | available_modes={', '.join(SCORING_MODES.keys())}")
     print(
-        "genre={genre} | mood={mood} | energy={energy} | decade={decade} | tags={tags}".format(
-            genre=user_prefs["genre"],
-            mood=user_prefs["mood"],
-            energy=user_prefs["energy"],
-            decade=user_prefs["release_decade"],
-            tags="|".join(user_prefs["mood_tags"]),
-        )
+            "genre={genre} | mood={mood} | energy={energy} | tempo={tempo} | decade={decade} | tags={tags}".format(
+                genre=user_prefs["genre"],
+                mood=user_prefs["mood"],
+                energy=user_prefs["energy"],
+                tempo=user_prefs["tempo_bpm"],
+                decade=user_prefs["release_decade"],
+                tags="|".join(user_prefs["mood_tags"]),
+            )
     )
     print("=" * 88)
 

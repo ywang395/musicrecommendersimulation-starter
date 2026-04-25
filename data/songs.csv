@@ -19,3 +19,63 @@ id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness,po
 18,Fractured Light,Prism Wave,r&b,romantic,0.63,96,0.77,0.76,0.44,71,1990,smooth|lush|late-night,0.58,0.67,0.34
 19,Battlecry,Iron Dawn,hip-hop,motivated,0.80,98,0.61,0.85,0.09,89,2010,competitive|bold|urban,0.86,0.41,0.15
 20,Twilight Waltz,Echo Strings,classical,dreamy,0.22,58,0.80,0.30,0.96,44,1800,delicate|floating|orchestral,0.12,0.62,0.95
+21,Golden Hour,The Sunsets,pop,romantic,0.71,108,0.88,0.75,0.28,80,2010,warm|dreamy|summer,0.65,0.50,0.18
+22,Static Hearts,Neon Echo,pop,melancholic,0.60,104,0.42,0.68,0.22,77,2000,reflective|bittersweet|wistful,0.55,0.62,0.20
+23,Paper Planes,Coastal Drift,pop,chill,0.55,100,0.72,0.70,0.40,72,2010,easygoing|laid-back|coastal,0.48,0.45,0.22
+24,Daydream Machine,Velvet Static,indie pop,dreamy,0.58,96,0.76,0.66,0.52,70,2010,hazy|psychedelic|warm,0.50,0.58,0.30
+25,Last Train Home,Hollow Bells,indie pop,melancholic,0.50,88,0.38,0.55,0.60,64,2000,longing|quiet|introspective,0.42,0.72,0.38
+26,Neon Bloom,Prism Wave,indie pop,joyful,0.72,116,0.85,0.80,0.30,78,2020,bright|danceable|uplifting,0.68,0.40,0.15
+27,Rainy Season,LoRoom,lofi,peaceful,0.30,68,0.62,0.55,0.88,60,2020,rain|gentle|background,0.18,0.70,0.85
+28,Warm Static,Paper Lanterns,lofi,relaxed,0.33,74,0.58,0.52,0.82,58,2020,mellow|ambient|late-night,0.20,0.65,0.80
+29,Dusty Record,Vinyl Haze,lofi,nostalgic,0.38,76,0.65,0.60,0.80,55,2010,retro|cozy|warm,0.25,0.68,0.77
+30,Signal Lost,Gridlock,rock,moody,0.78,138,0.40,0.62,0.15,76,2000,dark|driving|cinematic,0.82,0.48,0.22
+31,Open Road,The Wayfarers,rock,energetic,0.85,144,0.68,0.70,0.18,80,1990,anthemic|road|freedom,0.88,0.38,0.16
+32,Glass Ceilings,Faultline,rock,intense,0.88,156,0.35,0.60,0.08,71,2010,aggressive|raw|cathartic,0.90,0.42,0.14
+33,Echo Chamber,Orbit Bloom,ambient,meditative,0.20,55,0.70,0.30,0.95,48,2020,deep|resonant|still,0.08,0.60,0.96
+34,Tidal Drift,Pale Shore,ambient,peaceful,0.18,50,0.75,0.25,0.97,44,2010,oceanic|serene|floating,0.06,0.55,0.97
+35,Void Garden,Subwave,ambient,dreamy,0.25,58,0.68,0.35,0.93,50,2020,dark|textural|cinematic,0.12,0.50,0.94
+36,Late Night Jam,Blue Note Society,jazz,relaxed,0.42,95,0.74,0.60,0.85,60,1970,smoky|intimate|cool,0.35,0.80,0.60
+37,Bebop City,Brass & Ivory,jazz,joyful,0.65,180,0.80,0.72,0.78,65,1950,lively|complex|swinging,0.72,0.88,0.55
+38,Moonlight Sax,Solo Reed,jazz,romantic,0.38,80,0.82,0.45,0.90,54,1960,sensual|slow|expressive,0.28,0.82,0.70
+39,Retrowave Runner,Neon Echo,synthwave,energetic,0.80,118,0.62,0.80,0.18,82,1980,neon|retro|action,0.78,0.28,0.20
+40,Cyber Dawn,Gridlock,synthwave,intense,0.85,130,0.50,0.78,0.10,85,1980,futuristic|dark|pulsing,0.82,0.22,0.12
+41,Velvet Vice,Orbit Bloom,synthwave,moody,0.68,105,0.44,0.70,0.25,74,1980,cinematic|noir|brooding,0.60,0.38,0.28
+42,Heartland,Prairie Sound,country,nostalgic,0.52,96,0.68,0.62,0.80,62,1990,americana|open-road|warm,0.48,0.82,0.68
+43,Honky Tonk Moon,Sandswell,country,joyful,0.70,108,0.85,0.78,0.70,66,1980,danceable|twang|festive,0.72,0.70,0.55
+44,Whiskey Rivers,The Wayfarers,country,melancholic,0.45,88,0.32,0.50,0.85,55,2000,storytelling|loss|acoustic,0.38,0.88,0.72
+45,Bass Cannon,Bass Theory,electronic,energetic,0.95,150,0.65,0.95,0.04,90,2020,club|heavy|rave,0.98,0.10,0.05
+46,Polyrhythm Palace,Circuit Mind,electronic,focused,0.72,128,0.60,0.85,0.08,78,2010,complex|technical|headphones,0.75,0.32,0.30
+47,Sunset Protocol,Coastal Drift,electronic,chill,0.55,110,0.72,0.74,0.20,73,2010,downtempo|warm|drifting,0.48,0.35,0.35
+48,Forest Path,Hollow Oak,folk,peaceful,0.28,70,0.74,0.38,0.95,50,2000,acoustic|nature|gentle,0.20,0.84,0.86
+49,River Song,Paper Lanterns,folk,nostalgic,0.35,80,0.65,0.44,0.90,52,1970,storytelling|campfire|earthy,0.28,0.90,0.80
+50,Wildflower,Solo Reed,folk,happy,0.48,92,0.80,0.55,0.88,57,1980,uplifting|spring|community,0.40,0.78,0.74
+51,Throne of Thorns,Vortex Kings,metal,angry,0.96,175,0.18,0.52,0.04,88,2010,brutal|technical|relentless,0.97,0.28,0.08
+52,Frozen Kingdom,Iron Dawn,metal,intense,0.93,168,0.30,0.58,0.06,85,2000,epic|melodic|powerful,0.94,0.35,0.10
+53,Ashes Rise,Faultline,metal,melancholic,0.82,155,0.35,0.50,0.08,76,2010,doom|atmospheric|heavy,0.85,0.50,0.12
+54,Cumbia Caliente,Ritmo Caliente,latin,joyful,0.82,115,0.88,0.90,0.15,82,2000,festive|tropical|dance,0.85,0.30,0.10
+55,Reggaeton Noche,Bajo El Sol,latin,energetic,0.88,95,0.78,0.92,0.08,87,2010,party|urban|hot,0.90,0.22,0.08
+56,Bossa Nova Breeze,Rio Strings,latin,relaxed,0.40,112,0.82,0.60,0.82,60,1960,smooth|tropical|intimate,0.30,0.72,0.65
+57,Concerto in Blue,Echo Strings,classical,focused,0.35,76,0.65,0.28,0.98,52,1900,orchestral|complex|emotive,0.22,0.80,0.96
+58,String Quartet No. 4,Pale Shore,classical,melancholic,0.25,62,0.40,0.20,0.99,46,1800,chamber|introspective|delicate,0.14,0.72,0.98
+59,Prelude in Storm,Brass & Ivory,classical,intense,0.60,144,0.45,0.35,0.96,55,1850,dramatic|dynamic|grand,0.42,0.68,0.97
+60,Delta Blues,Blue Note Society,blues,nostalgic,0.52,84,0.38,0.55,0.86,58,1940,raw|soulful|regional,0.48,0.92,0.65
+61,Chicago Nights,Hollow Bells,blues,moody,0.58,92,0.42,0.60,0.80,62,1960,urban|electric|gritty,0.55,0.86,0.55
+62,Crossroads,The Wayfarers,blues,sad,0.44,76,0.28,0.48,0.88,54,1950,acoustic|lament|spiritual,0.38,0.90,0.72
+63,Silk & Soul,Prism Wave,r&b,romantic,0.60,94,0.82,0.74,0.50,75,2000,sensual|lush|smooth,0.52,0.70,0.30
+64,Midnight Confessions,Velvet Static,r&b,moody,0.55,88,0.58,0.68,0.42,70,1990,dark|late-night|emotional,0.48,0.75,0.32
+65,Higher Ground,Bass Theory,r&b,motivated,0.75,102,0.72,0.80,0.22,80,2010,empowering|soulful|groove,0.70,0.60,0.18
+66,Street Anthem,Iron Dawn,hip-hop,motivated,0.82,96,0.65,0.88,0.10,88,2010,bold|urban|confident,0.85,0.48,0.12
+67,Late Night Cipher,Circuit Mind,hip-hop,focused,0.62,90,0.50,0.78,0.15,78,2020,lyrical|underground|introspective,0.58,0.72,0.18
+68,Gold Chains,Bajo El Sol,hip-hop,energetic,0.85,100,0.75,0.90,0.06,91,2000,party|swagger|loud,0.88,0.35,0.08
+69,Daydream Pop,Indigo Parade,pop,happy,0.74,112,0.86,0.76,0.32,81,2020,summery|light|carefree,0.68,0.44,0.16
+70,Electric Feel,Coastal Drift,pop,energetic,0.86,120,0.80,0.84,0.12,90,2010,danceable|bright|feel-good,0.80,0.36,0.10
+71,Fading Signal,Hollow Bells,indie pop,melancholic,0.52,92,0.36,0.58,0.55,66,2000,quiet|introspective|dusk,0.44,0.68,0.35
+72,Bloom Season,Velvet Static,indie pop,happy,0.68,110,0.82,0.75,0.38,74,2020,fresh|joyful|indie,0.62,0.46,0.22
+73,Slow Burn,Solo Reed,lofi,chill,0.28,66,0.60,0.50,0.84,56,2020,late-night|mellow|introspective,0.16,0.66,0.82
+74,City Rain,Vinyl Haze,lofi,peaceful,0.32,70,0.64,0.54,0.86,59,2010,urban|rain|soft,0.18,0.72,0.84
+75,Afterglow,Orbit Bloom,ambient,relaxed,0.22,54,0.72,0.28,0.96,47,2020,warm|glowing|slow,0.10,0.52,0.95
+76,Mountain Echo,Prairie Sound,folk,peaceful,0.30,74,0.70,0.40,0.92,51,1990,nature|open|serene,0.22,0.82,0.82
+77,Uprising,Max Pulse,rock,motivated,0.90,148,0.72,0.68,0.10,83,2010,anthemic|powerful|stadium,0.92,0.36,0.14
+78,Jungle Groove,Ritmo Caliente,electronic,energetic,0.90,135,0.70,0.92,0.06,86,2010,tribal|club|driving,0.92,0.20,0.08
+79,Velvet Underground,Blue Note Society,jazz,moody,0.45,88,0.50,0.58,0.82,62,1970,dark|cool|late-night,0.38,0.84,0.60
+80,Neon Cathedral,Gridlock,synthwave,dreamy,0.65,102,0.58,0.72,0.28,76,1980,cinematic|vast|melancholy,0.58,0.44,0.25
